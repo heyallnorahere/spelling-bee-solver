@@ -22,8 +22,8 @@ project "codegen"
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
     files {
-        "%{prj.name}/src/**.cpp",
-        "%{prj.name}/src/**.h"
+        "%{prj.name}/src/**.c",
+        "%{prj.name}/src/**.h",
     }
     filter "configurations:Debug"
         symbols "on"
@@ -40,6 +40,15 @@ project "spelling-bee-solver"
     files {
         "%{prj.name}/src/**.cpp",
         "%{prj.name}/src/**.h",
+    }
+    sysincludedirs {
+        "vendor/json/include"
+    }
+    links {
+        "codegen"
+    }
+    prebuildcommands {
+        '"%{cfg.targetdir}/../codegen/codegen" embed "../vendor/english-words/words_dictionary.json" "generated_words.h"'
     }
     filter "configurations:Debug"
         symbols "on"

@@ -1,0 +1,6 @@
+[submodule "vendor/english-words"]
+	path = vendor/english-words
+	url = https://github.com/dwyl/english-words
+[submodule "vendor/json"]
+	path = vendor/json
+	url = https://github.com/nlohmann/json

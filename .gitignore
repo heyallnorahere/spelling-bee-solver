@@ -10,6 +10,7 @@ bin-int/
 # project files
 *.sln
 *.*proj*
+.vs/**
 *.xcworkspace/
 Makefile
 # generated code
