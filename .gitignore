@@ -1,0 +1,16 @@
+# binaries
+*.exe
+*.dll
+*.lib
+# vendor folder
+!vendor/**
+# binaries cont.
+bin/
+bin-int/
+# project files
+*.sln
+*.*proj*
+*.xcworkspace/
+Makefile
+# generated code
+generated_*
