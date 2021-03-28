@@ -14,6 +14,32 @@ workspace "spelling-bee-solver"
             "_CRT_SECURE_NO_WARNINGS"
         }
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+group "dependencies"
+project "libcurl"
+    kind "StaticLib"
+    language "C"
+    staticruntime "on"
+    targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+    files {
+        "vendor/curl/src/*.c",
+        "vendor/curl/src/*.h",
+        "vendor/curl/include/**.h"
+    }
+    includedirs {
+        "vendor/curl/src",
+        "vendor/curl/lib",
+        "vendor/curl/include"
+    }
+    filter "system:macosx"
+        files {
+            "vendor/curl/src/macos/src/*.cpp"
+        }
+    filter "configurations:Debug"
+        symbols "on"
+    filter "configurations:Release"
+        optimize "on"
+group ""
 project "spelling-bee-solver"
     location "spelling-bee-solver"
     kind "ConsoleApp"
@@ -27,7 +53,11 @@ project "spelling-bee-solver"
         "%{prj.name}/src/**.h",
     }
     sysincludedirs {
-        "vendor/json/include"
+        "vendor/json/include",
+        "vendor/curl/include"
+    }
+    links {
+        "libcurl"
     }
     filter "configurations:Debug"
         symbols "on"
