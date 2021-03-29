@@ -65,7 +65,7 @@ int main(int argc, const char* argv[]) {
 	for (auto c : _other_characters) {
 		other_characters.push_back(c.get<char_t>());
 	}
-	for (int length = min_word_length; length < max_word_length; length++) {
+	for (int length = min_word_length; length < max_word_length + 1; length++) {
 		make_words(length, words);
 	}
 	nlohmann::json answers;
