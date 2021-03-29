@@ -16,3 +16,6 @@ obj/
 Makefile
 # libcurl build files
 libcurl_build/
+# input/output files
+spelling-bee.json
+answers.json

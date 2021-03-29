@@ -10,7 +10,7 @@ size_t write_callback(char* pointer, size_t size, size_t nmemb, void* userdata) 
 	output << std::string(pointer, nmemb * size);
 	return nmemb;
 }
-dictionary::dictionary(const std::string& url) {
+dictionary::dictionary(const std::string& url, int max_length, int min_length) {
 	CURL* curl = curl_easy_init();
 	assert(curl);
 	assert(!curl_easy_setopt(curl, CURLOPT_URL, url.c_str()));
@@ -25,14 +25,15 @@ dictionary::dictionary(const std::string& url) {
 	std::map<std::string, int> map;
 	j.get_to(map);
 	for (auto p : map) {
-		this->m.push_back(p.first);
+		if (p.first.length() > max_length && max_length != 0) {
+			continue;
+		}
+		if (p.first.length() < min_length && min_length != 0) {
+			continue;
+		}
+		this->m.insert(p.first);
 	}
 }
 bool dictionary::is_word(const std::string& word) {
-	for (const auto& w : this->m) {
-		if (w == word) {
-			return true;
-		}
-	}
-	return false;
+	return this->m.find(word) != this->m.end();
 }

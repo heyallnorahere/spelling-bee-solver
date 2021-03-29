@@ -1,10 +1,11 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <unordered_set>
 class dictionary {
 public:
-	dictionary(const std::string& url);
+	dictionary(const std::string& url, int max_length = 0, int min_length = 0);
 	bool is_word(const std::string& word);
 private:
-	std::vector<std::string> m;
+	std::unordered_set<std::string> m;
 };
