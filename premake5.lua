@@ -8,6 +8,9 @@ workspace "spelling-bee-solver"
     flags {
         "MultiProcessorCompile"
     }
+    defines {
+        "CURL_STATICLIB"
+    }
     startproject "spelling-bee-solver"
     filter "system:windows"
         defines {
@@ -16,7 +19,7 @@ workspace "spelling-bee-solver"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 group "dependencies"
 project "libcurl"
-    kind "SharedLib"
+    kind "StaticLib"
     language "C"
     staticruntime "on"
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
@@ -31,8 +34,8 @@ project "libcurl"
         "vendor/curl/lib"
     }
     defines {
-        "BUILDING_LIBCURL",
-        "USE_OPENSSL"
+        "USE_OPENSSL",
+        "BUILDING_LIBCURL"
     }
     filter "system:windows"
         links {
@@ -75,7 +78,6 @@ project "spelling-bee-solver"
     filter "system:windows"
         postbuildcommands {
             '{COPY} "C:/Program Files/OpenSSL/bin/*.dll" "%{cfg.targetdir}"',
-            '{COPY} "%{cfg.targetdir}/../libcurl/libcurl.dll" "%{cfg.targetdir}"',
         }
     filter "configurations:Debug"
         symbols "on"
