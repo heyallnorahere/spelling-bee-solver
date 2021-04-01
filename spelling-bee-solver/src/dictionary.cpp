@@ -31,9 +31,25 @@ dictionary::dictionary(const std::string& url, int max_length, int min_length) {
 		if (p.first.length() < min_length && min_length != 0) {
 			continue;
 		}
+#ifdef ALGORITHM_SLOWER
 		this->m.insert(p.first);
+#else
+		this->m.push_back(p.first);
+#endif
 	}
 }
 bool dictionary::is_word(const std::string& word) {
+#ifdef ALGORITHM_SLOWER
 	return this->m.find(word) != this->m.end();
+#else
+	return false;
+#endif
+}
+size_t dictionary::get_word_count() {
+	return this->m.size();
+}
+std::string dictionary::get_word(size_t index) {
+	auto it = this->m.begin();
+	std::advance(it, index);
+	return *it;
 }

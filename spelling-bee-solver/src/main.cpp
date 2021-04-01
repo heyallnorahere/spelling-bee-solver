@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <iostream>
+#include <array>
 std::shared_ptr<dictionary> _dictionary;
 struct char_t {
 	char data;
@@ -25,6 +26,7 @@ template<typename T, typename U> bool contains(const T& container, const U& valu
 	}
 	return false;
 }
+#ifdef ALGORITHM_SLOWER
 void make_words(const std::string& prompt, std::vector<std::string>& words, int length, int index = 0) {
 	std::vector<char> compounded_list = other_characters;
 	compounded_list.push_back(main_character);
@@ -40,9 +42,79 @@ void make_words(const std::string& prompt, std::vector<std::string>& words, int 
 		}
 	}
 }
-void make_words(int length, std::vector<std::string>& words) {
-	make_words("", words, length);
+void make_words(int min_word_length, int max_word_length, std::vector<std::string>& words) {
+	for (int length = min_word_length; length < max_word_length + 1; length++) {
+		make_words("", words, length);
+	}
 }
+#endif
+#ifdef ALGORITHM_DAWG
+std::vector<char> get_compounded_list() {
+	std::vector<char> list = other_characters;
+	list.push_back(main_character);
+	return list;
+}
+struct node {
+	std::array<node*, 26> children;
+	bool eow;
+	char character;
+	node* parent;
+	node() {
+		for (size_t i = 0; i < this->children.size(); i++) {
+			this->children[i] = NULL;
+		}
+		this->eow = false;
+		this->character = '\0';
+		this->parent = NULL;
+	}
+	~node() {
+		for (size_t i = 0; i < this->children.size(); i++) {
+			delete this->children[i];
+		}
+	}
+};
+node root;
+void insert_word(const std::string& word, node& n, int index = 0) {
+	if (!contains(get_compounded_list(), word[index])) {
+		return;
+	}
+	auto& ptr = n.children[word[index] - 'a'];
+	if (!ptr) {
+		ptr = new node;
+		ptr->parent = &n;
+		ptr->character = word[index];
+	}
+	if (index >= word.length() - 1) {
+		ptr->eow = true;
+	} else {
+		insert_word(word, *ptr, index + 1);
+	}
+}
+void assemble(node& n, std::string& word) {
+	if (n.character != '\0') {
+		assemble(*n.parent, word);
+		word.push_back(n.character);
+	}
+}
+void walk_node(node& n, std::vector<std::string>& words) {
+	if (n.eow) {
+		std::string word;
+		assemble(n, word);
+		if (contains(word, main_character)) words.push_back(word);
+	}
+	for (auto child : n.children) {
+		if (child) {
+			walk_node(*child, words);
+		}
+	}
+}
+void make_words(int min_word_length, int max_word_length, std::vector<std::string>& words) {
+	for (size_t i = 0; i < _dictionary->get_word_count(); i++) {
+		insert_word(_dictionary->get_word(i), root);
+	}
+	walk_node(root, words);
+}
+#endif
 int main(int argc, const char* argv[]) {
 	constexpr int max_word_length = 10;
 	constexpr int min_word_length = 4;
@@ -65,9 +137,7 @@ int main(int argc, const char* argv[]) {
 	for (auto c : _other_characters) {
 		other_characters.push_back(c.get<char_t>());
 	}
-	for (int length = min_word_length; length < max_word_length + 1; length++) {
-		make_words(length, words);
-	}
+	make_words(min_word_length, max_word_length, words);
 	nlohmann::json answers;
 	for (const auto& word : words) {
 		answers.push_back(word);

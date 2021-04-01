@@ -1,3 +1,13 @@
+newoption {
+    trigger = "method",
+    value = "ALGORITHM",
+    description = "Method of sorting through words",
+    default = "DAWG",
+    allowed = {
+        { "DAWG", "Directed Acyclic Word Graph" },
+        { "slower", "Slower algorithm, the initial" }
+    }
+}
 workspace "spelling-bee-solver"
     architecture "x64"
     targetdir "build"
@@ -16,6 +26,14 @@ workspace "spelling-bee-solver"
         defines {
             "_CRT_SECURE_NO_WARNINGS"
         }
+    filter "options:method=DAWG"
+        defines {
+            "ALGORITHM_DAWG"
+        }
+    filter "options:method=slower"
+        defines {
+            "ALGORITHM_SLOWER"
+        }
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 group "dependencies"
 project "libcurl"
@@ -25,21 +43,24 @@ project "libcurl"
     staticruntime "on"
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-    files {
-        "vendor/curl/lib/**.c",
-        "vendor/curl/lib/**.h",
-        "vendor/curl/include/**.h",
-    }
     includedirs {
         "vendor/curl/include",
         "vendor/curl/lib"
     }
     defines {
         "USE_OPENSSL",
-        "BUILDING_LIBCURL",
-        "macintosh",
-        "__MRC__"
+        "BUILDING_LIBCURL"
     }
+    filter "system:macosx"
+        files {
+            "libcurl_placeholder.c"
+        }
+    filter "system:not macosx"
+        files {
+            "vendor/curl/lib/**.c",
+            "vendor/curl/lib/**.h",
+            "vendor/curl/include/**.h",
+        }
     filter "system:windows"
         links {
             "ws2_32.lib",
@@ -53,20 +74,6 @@ project "libcurl"
         }
         sysincludedirs {
             "C:/Program Files/OpenSSL/include"
-        }
-    filter "system:macosx"
-        links {
-            "libssl",
-            "libcrypto"
-        }
-        sysincludedirs {
-            "/usr/local/opt/openssl/include"
-        }
-        libdirs {
-            "/usr/local/opt/openssl/lib"
-        }
-        defines {
-            "__USE_C99_MATH"
         }
     filter "configurations:Debug"
         symbols "on"
