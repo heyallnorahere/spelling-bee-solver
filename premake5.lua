@@ -21,6 +21,7 @@ group "dependencies"
 project "libcurl"
     kind "StaticLib"
     language "C"
+    cdialect "C11"
     staticruntime "on"
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -35,7 +36,9 @@ project "libcurl"
     }
     defines {
         "USE_OPENSSL",
-        "BUILDING_LIBCURL"
+        "BUILDING_LIBCURL",
+        "macintosh",
+        "__MRC__"
     }
     filter "system:windows"
         links {
@@ -50,6 +53,20 @@ project "libcurl"
         }
         sysincludedirs {
             "C:/Program Files/OpenSSL/include"
+        }
+    filter "system:macosx"
+        links {
+            "libssl",
+            "libcrypto"
+        }
+        sysincludedirs {
+            "/usr/local/opt/openssl/include"
+        }
+        libdirs {
+            "/usr/local/opt/openssl/lib"
+        }
+        defines {
+            "__USE_C99_MATH"
         }
     filter "configurations:Debug"
         symbols "on"
@@ -72,10 +89,27 @@ project "spelling-bee-solver"
         "vendor/json/include",
         "vendor/curl/include"
     }
-    links {
-        "libcurl"
-    }
+    filter "system:macosx"
+        libdirs {
+            "vendor/curl_binaries/lib",
+            "/usr/local/opt/zlib/lib",
+            "/usr/local/opt/openssl/lib",
+            "/usr/local/opt/libssh2/lib",
+            "/usr/local/opt/openldap/lib",
+        }
+        links {
+            "curl",
+            "z",
+            "ssl",
+            "crypto",
+            "ssh2",
+            "ldap",
+            "lber"
+        }
     filter "system:windows"
+        links {
+            "libcurl"
+        }
         postbuildcommands {
             '{COPY} "C:/Program Files/OpenSSL/bin/*.dll" "%{cfg.targetdir}"',
         }
