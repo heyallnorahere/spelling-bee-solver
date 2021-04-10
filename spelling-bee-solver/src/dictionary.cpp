@@ -44,18 +44,37 @@ dictionary::dictionary(int max_length, int min_length) {
 #endif
 	}
 #else
-    for (size_t i = 0; i < generated_dict_data_size; i++) {
-		std::string word = generated_dict_data[i];
-		if (word.length() > max_length && max_length != 0) {
+	std::string data = std::string(generated_dict_data, generated_dict_data_size);
+    std::string double_endl = "\r\n\r\n";
+    size_t pos = data.find(double_endl);
+    if (pos != std::string::npos) {
+        data = data.substr(pos + double_endl.length());
+    }
+    std::string word = "";
+    std::vector<std::string> dict;
+    for (size_t i = 0; i < data.length(); i++) {
+        char c = data[i];
+        if (c == '\n') {
+            dict.push_back(word);
+            word.clear();
+        } else if (c != '\r') {
+            word.push_back(data[i]);
+        }
+    }
+    if (!contains(dict, word)) {
+        dict.push_back(word);
+	}
+    for (const std::string& w : dict) {
+		if (w.length() > max_length && max_length != 0) {
 			continue;
 		}
-		if (word.length() < min_length && min_length != 0) {
+		if (w.length() < min_length && min_length != 0) {
 			continue;
 		}
 #ifdef ALGORITHM_SLOWER
-		this->m.insert(word);
+		this->m.insert(w);
 #else
-		this->m.push_back(word);
+		this->m.push_back(w);
 #endif
 	}
 #endif

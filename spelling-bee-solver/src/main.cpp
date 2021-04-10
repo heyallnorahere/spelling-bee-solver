@@ -18,14 +18,6 @@ void from_json(const nlohmann::json& j, char_t& c) {
 }
 char main_character;
 std::vector<char> other_characters;
-template<typename T, typename U> bool contains(const T& container, const U& value) {
-	for (const U& val : container) {
-		if (val == value) {
-			return true;
-		}
-	}
-	return false;
-}
 #ifdef ALGORITHM_SLOWER
 void make_words(const std::string& prompt, std::vector<std::string>& words, int length, int index = 0) {
 	std::vector<char> compounded_list = other_characters;

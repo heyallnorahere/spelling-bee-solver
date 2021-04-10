@@ -15,3 +15,11 @@ private:
 	std::vector<std::string> m;
 #endif
 };
+template<typename T, typename U> bool contains(const T& container, const U& value) {
+	for (const U& val : container) {
+		if (val == value) {
+			return true;
+		}
+	}
+	return false;
+}

@@ -52,6 +52,13 @@ static std::string parse_filename(const std::string& path) {
         return local_filename;
     }
 }
+static void replace(const std::string& replace, const std::string& with, std::string& string) {
+    size_t pos = string.find(replace);
+    while (pos != std::string::npos) {
+        string.replace(pos, replace.length(), with);
+        pos = string.find(replace);
+    }
+}
 int embed(const std::string& url, const std::string& filepath) {
     std::string data;
     CURL* c = curl_easy_init();
@@ -60,35 +67,24 @@ int embed(const std::string& url, const std::string& filepath) {
     curl_easy_cleanup(c);
     std::cout << "Successfully pulled data from: " << url << std::endl;
     std::cout << "Parsing dictionary data..." << std::endl;
-    std::string double_endl = "\r\n\r\n";
-    size_t pos = data.find(double_endl);
-    if (pos != std::string::npos) {
-        data = data.substr(pos + double_endl.length());
-    }
-    std::string word = "";
-    std::vector<std::string> dict;
-    for (size_t i = 0; i < data.length(); i++) {
-        char c = data[i];
-        if (c == '\n') {
-            dict.push_back(word);
-            word.clear();
-        } else if (c != '\r') {
-            word.push_back(data[i]);
+    std::stringstream ss;
+    for (char c : data) {
+        if (c == '\r') {
+            ss << "\\r";
+        } else if (c == '\n') {
+            ss << "\\n";
+        } else {
+            ss << c;
         }
     }
-    if (!contains(dict, word)) {
-        dict.push_back(word);
-    }
+    data = ss.str();
     std::cout << "Embedding data into C source/header file: " << filepath << std::endl;
-    std::string symbol_prefix = parse_filename(filepath);
-    std::string data_footer = "const char* " + symbol_prefix + "_data[] = {\n";
     std::ofstream output(filepath);
-    output << data_footer;
-    for (const auto& w : dict) {
-        output << "\t\"" << w << "\",\n";
-    }
-    output << "};\n" << std::flush;
-    output << "size_t " << symbol_prefix << "_data_size = " << dict.size() << ";\n" << std::flush;
+    std::string symbol_prefix = parse_filename(filepath);
+    std::string data_footer = "char " + symbol_prefix + "_data[] = ";
+    output << "#pragma once\n" << std::flush;
+    output << data_footer << "\"" << data << "\";\n" << std::flush;
+    output << "size_t " << symbol_prefix << "_data_size = " << data.length() << ";\n" << std::flush;
     output.close();
     return 0;
 }
