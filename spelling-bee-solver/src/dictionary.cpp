@@ -44,11 +44,12 @@ dictionary::dictionary(int max_length, int min_length) {
 #endif
 	}
 #else
-    for (auto word : embedded_data) {
-		if (strlen(word) > max_length && max_length != 0) {
+    for (size_t i = 0; i < generated_dict_data_size; i++) {
+		std::string word = generated_dict_data[i];
+		if (word.length() > max_length && max_length != 0) {
 			continue;
 		}
-		if (strlen(word) < min_length && min_length != 0) {
+		if (word.length() < min_length && min_length != 0) {
 			continue;
 		}
 #ifdef ALGORITHM_SLOWER
