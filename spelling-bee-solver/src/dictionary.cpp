@@ -5,15 +5,21 @@
 #include <iostream>
 #include <sstream>
 #include <map>
+#ifndef DICTIONARY_DWYL_JSON
+#include "generated_dict.h"
+#else
+#define DICT_URL "https://raw.githubusercontent.com/dwyl/english-words/master/words_dictionary.json"
+#endif
 size_t write_callback(char* pointer, size_t size, size_t nmemb, void* userdata) {
 	std::stringstream& output = *(std::stringstream*)userdata;
 	output << std::string(pointer, nmemb * size);
 	return nmemb;
 }
-dictionary::dictionary(const std::string& url, int max_length, int min_length) {
+dictionary::dictionary(int max_length, int min_length) {
+#ifdef DICTIONARY_DWYL_JSON
 	CURL* curl = curl_easy_init();
 	assert(curl);
-	assert(!curl_easy_setopt(curl, CURLOPT_URL, url.c_str()));
+	assert(!curl_easy_setopt(curl, CURLOPT_URL, DICT_URL));
 	assert(!curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, false));
 	std::stringstream data;
 	assert(!curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback));
@@ -37,6 +43,15 @@ dictionary::dictionary(const std::string& url, int max_length, int min_length) {
 		this->m.push_back(p.first);
 #endif
 	}
+#else
+    for (auto word : embedded_data) {
+#ifdef ALGORITHM_SLOWER
+		this->m.insert(word);
+#else
+		this->m.push_back(word);
+#endif
+	}
+#endif
 }
 bool dictionary::is_word(const std::string& word) {
 #ifdef ALGORITHM_SLOWER

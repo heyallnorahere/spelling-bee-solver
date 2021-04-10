@@ -119,7 +119,7 @@ int main(int argc, const char* argv[]) {
 	constexpr int max_word_length = 10;
 	constexpr int min_word_length = 4;
 	// credit to the repo author
-	_dictionary = std::shared_ptr<dictionary>(new dictionary("https://raw.githubusercontent.com/dwyl/english-words/master/words_dictionary.json", max_word_length, min_word_length));
+	_dictionary = std::shared_ptr<dictionary>(new dictionary(max_word_length, min_word_length));
 	std::cout << "pulled and loaded dictionary!" << std::endl;
 	std::string spelling_bee_path = "spelling-bee.json";
 	if (argc >= 2) {

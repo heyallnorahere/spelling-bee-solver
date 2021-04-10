@@ -8,6 +8,17 @@ newoption {
         { "slower", "Slower algorithm, the initial" }
     }
 }
+newoption {
+    trigger = "dictionary",
+    value = "DICT",
+    description = "The list of words to use for parsing",
+    default = "twl06",
+    allowed = {
+        { "dwyl", "DWYL Text file via codegen" },
+        { "twl06", "Official Scrabble dictionary via codegen" },
+        { "dwyl-json", "DWYL Json file (libCURL)" }
+    }
+}
 workspace "spelling-bee-solver"
     architecture "x64"
     targetdir "build"
@@ -34,7 +45,26 @@ workspace "spelling-bee-solver"
         defines {
             "ALGORITHM_SLOWER"
         }
+    filter "options:dictionary=dwyl"
+        defines {
+            "DICTIONARY_DWYL"
+        }
+    filter "options:dictionary=twl06"
+        defines {
+            "DICTIONARY_TWL06"
+        }
+    filter "options:dictionary=dwyl-json"
+        defines {
+            "DICTIONARY_DWYL_JSON"
+        }
+    filter "system:windows"
+        defines {
+            "SYSTEM_WINDOWS"
+        }
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+urls = {}
+urls["dwyl"] = "https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt"
+urls["twl06"] = "https://www.wordgamedictionary.com/twl06/download/twl06.txt"
 group "dependencies"
 project "libcurl"
     kind "StaticLib"
@@ -80,8 +110,9 @@ project "libcurl"
     filter "configurations:Release"
         optimize "on"
 group ""
-project "spelling-bee-solver"
-    location "spelling-bee-solver"
+group "tools"
+project "codegen"
+    location "codegen"
     kind "ConsoleApp"
     language "C++"
     cppdialect "C++17"
@@ -93,7 +124,6 @@ project "spelling-bee-solver"
         "%{prj.name}/src/**.h",
     }
     sysincludedirs {
-        "vendor/json/include",
         "vendor/curl/include"
     }
     filter "system:macosx"
@@ -124,4 +154,55 @@ project "spelling-bee-solver"
         symbols "on"
     filter "configurations:Release"
         optimize "on"
-    
+project "spelling-bee-solver"
+    location "spelling-bee-solver"
+    kind "ConsoleApp"
+    language "C++"
+    cppdialect "C++17"
+    staticruntime "on"
+    targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+    files {
+        "%{prj.name}/src/**.cpp",
+        "%{prj.name}/src/**.h",
+    }
+    sysincludedirs {
+        "vendor/json/include",
+        "vendor/curl/include"
+    }
+    filter "options:not dictionary=dwyl-json"
+        links {
+            "codegen"
+        }
+        prebuildcommands {
+            '"%{cfg.targetdir}/../codegen/codegen" embed "' .. urls[_OPTIONS["dictionary"]] .. '" "src/generated_dict.h"'
+        }
+    filter "system:macosx"
+        libdirs {
+            "vendor/curl_binaries/lib",
+            "/usr/local/opt/zlib/lib",
+            "/usr/local/opt/openssl/lib",
+            "/usr/local/opt/libssh2/lib",
+            "/usr/local/opt/openldap/lib",
+        }
+        links {
+            "curl",
+            "z",
+            "ssl",
+            "crypto",
+            "ssh2",
+            "ldap",
+            "lber"
+        }
+    filter "system:windows"
+        links {
+            "libcurl"
+        }
+        postbuildcommands {
+            '{COPY} "C:/Program Files/OpenSSL/bin/*.dll" "%{cfg.targetdir}"',
+        }
+    filter "configurations:Debug"
+        symbols "on"
+    filter "configurations:Release"
+        optimize "on"
+group ""

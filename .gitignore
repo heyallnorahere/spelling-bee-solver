@@ -21,3 +21,7 @@ libcurl_build/
 # input/output files
 spelling-bee.json
 answers.json
+# generated files
+generated_*
+# mac bs
+.DS_Store
