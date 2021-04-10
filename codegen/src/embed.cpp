@@ -59,6 +59,14 @@ static void replace(const std::string& replace, const std::string& with, std::st
         pos = string.find(replace);
     }
 }
+static bool is_header(const std::string& path) {
+    size_t pos = path.find_last_of('.');
+    if (pos == std::string::npos) {
+        return false;
+    }
+    std::string ext = path.substr(pos + 1);
+    return (ext == "h") || (ext == "hpp");
+}
 int embed(const std::string& url, const std::string& filepath) {
     std::string data;
     CURL* c = curl_easy_init();
@@ -82,8 +90,15 @@ int embed(const std::string& url, const std::string& filepath) {
     std::ofstream output(filepath);
     std::string symbol_prefix = parse_filename(filepath);
     std::string data_footer = "char " + symbol_prefix + "_data[] = ";
-    output << "#pragma once\n" << std::flush;
+    bool ih = is_header(filepath);
+    if (ih) {
+        output << "#pragma once\n" << std::flush;
+        output << "static ";
+    }
     output << data_footer << "\"" << data << "\";\n" << std::flush;
+    if (ih) {
+        output << "static ";
+    }
     output << "size_t " << symbol_prefix << "_data_size = " << data.length() << ";\n" << std::flush;
     output.close();
     return 0;
