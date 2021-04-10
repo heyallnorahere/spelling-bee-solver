@@ -45,6 +45,12 @@ dictionary::dictionary(int max_length, int min_length) {
 	}
 #else
     for (auto word : embedded_data) {
+		if (strlen(word) > max_length && max_length != 0) {
+			continue;
+		}
+		if (strlen(word) < min_length && min_length != 0) {
+			continue;
+		}
 #ifdef ALGORITHM_SLOWER
 		this->m.insert(word);
 #else
