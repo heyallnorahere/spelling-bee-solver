@@ -68,6 +68,7 @@ static bool is_header(const std::string& path) {
     return (ext == "h") || (ext == "hpp");
 }
 int embed(const std::string& url, const std::string& filepath) {
+    std::cout << "Pulling data from: " << url << std::endl;
     std::string data;
     CURL* c = curl_easy_init();
     CURLcode code = pull(c, url, data);
