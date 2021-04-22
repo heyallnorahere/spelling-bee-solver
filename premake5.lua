@@ -124,7 +124,8 @@ project "codegen"
         "%{prj.name}/src/**.h",
     }
     sysincludedirs {
-        "vendor/curl/include"
+        "vendor/curl/include",
+        "vendor/json/include"
     }
     filter "system:macosx"
         libdirs {
